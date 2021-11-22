@@ -1,4 +1,4 @@
-from EmpireBuilder import Point, Benchmark, Simplex
+from transform import Point, Benchmark, Simplex
 
 b0 = Benchmark(Point(1,1),Point(10,10))
 b1 = Benchmark(Point(2,5),Point(20,50))
