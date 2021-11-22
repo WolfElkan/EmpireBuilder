@@ -44,7 +44,21 @@ class Point(object):
 			return Point(*[ self[k] - other[k][0] for k in xrange(len(self)) ])
 	def __mul__(self, other):
 		if type(other) in [int, long, float]:
-			return Point(*[ c*other for c in self ])
+			return Point(*[ c * other for c in self ])
+	def __div__(self, other):
+		if type(other) in [int, long]:
+			other = float(other)
+		if type(other) in [float]:
+			return Point(*[ c / other for c in self ])
+	@staticmethod
+	def weightedAverage(*tuples):
+		total_weight = sum([ weight for point, weight in tuples ])
+		total_point = sum(
+			[ point*weight for point, weight in tuples[1:] ],
+			tuples[0][0] * tuples[0][1]
+		)
+		return total_point / total_weight
+
 
 class Benchmark(object):
 	"""An object containing two points.  point0 should map to point1"""
@@ -66,7 +80,7 @@ class Benchmark(object):
 	def p(self, num):
 		return Point(*self.a(num))
 
-print Benchmark(Point(1,1),Point(10,10))
+# print Benchmark(Point(1,1),Point(10,10))
 
 class Simplex(object):
 	"""docstring for Simplex"""
@@ -86,13 +100,18 @@ class Simplex(object):
 		result = self.matrix1 * generic
 		return self.origin1 + result
 
-b0 = Benchmark(Point(1,1,2),Point(10,10,20))
-b1 = Benchmark(Point(2,5,3),Point(20,50,30))
-b2 = Benchmark(Point(4,3,2),Point(40,30,20))
-b3 = Benchmark(Point(1,5,4),Point(10,50,40))
+b0 = Benchmark(Point(1,1),Point(10,10))
+b1 = Benchmark(Point(2,5),Point(20,50))
+b2 = Benchmark(Point(4,3),Point(40,30))
+b3 = Benchmark(Point(1,5),Point(10,50))
 
-test = Simplex(b0, b1, b2, b3)
+test = Simplex(b0, b1, b2)
 
-d = Point(2,4,7)
+print Point.weightedAverage(
+	(Point(2,4),3),
+	(Point(4,6),2),
+)
 
-print test.translate(d)
+d = Point(2,4)
+
+# print test.translate(d)
