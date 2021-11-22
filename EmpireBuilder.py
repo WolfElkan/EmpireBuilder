@@ -3,76 +3,51 @@ from numpy.matrixlib.defmatrix import matrix
 
 class Point(object):
 	"""docstring for Point"""
-	def __init__(self, x, y):
+	def __init__(self, *coords):
 		super(Point, self).__init__()
-		self.x = x
-		self.y = y
+		self.coords = coords
+	def __getattribute__(self, attr):
+		if attr == 'x':
+			return self.coords[0]
+		elif attr == 'y':
+			return self.coords[1]
+		else:
+			return super(Point, self).__getattribute__(attr)
+	def __getitem__(self, index):
+		return self.coords[index]
+	def __iter__(self):
+		for c in self.coords:
+			yield c
+	def __len__(self):
+		return len(self.coords)
 	def a(self):
-		return [self.x,self.y]
+		return self.coords
 	def m(self):
-		return mat([[self.x],[self.y]])
+		return mat([ [c] for c in self.coords ])
 	def floatify(self):
-		return Point(float(self.x),float(self.y))
+		return Point(*[ float(c) for c in self.coords ])
 	def __str__(self):
-		return "({},{})".format(self.x,self.y)
+		return "({})".format(','.join([ str(c) for c in self.coords ]))
 	def __repr__(self):
 		return self.__str__()
 	def __add__(self, other):
 		if type(other) is Point:
-			return Point(self.x + other.x, self.y + other.y)
+			return Point(*[ self[k] + other[k] for k in xrange(len(self)) ])
 		elif type(other) is matrix:
-			return Point(
-				self.x + other.tolist()[0][0], 
-				self.y + other.tolist()[1][0]  
-			)
+			other = other.tolist()
+			return Point(*[ self[k] + other[k][0] for k in xrange(len(self)) ])
 	def __sub__(self, other):
 		if type(other) is Point:
-			return Point(self.x - other.x, self.y - other.y)
+			return Point(*[ self[k] - other[k] for k in xrange(len(self)) ])
 		elif type(other) is matrix:
-			return Point(
-				self.x - other.tolist()[0][0], 
-				self.y - other.tolist()[1][0]  
-			)
+			other = other.tolist()
+			return Point(*[ self[k] - other[k][0] for k in xrange(len(self)) ])
 	def __mul__(self, other):
 		if type(other) in [int, long, float]:
-			return Point(self.x * other, self.y * other)
+			return Point(*[ c*other for c in self ])
 
 class Benchmark(object):
-	"""An object containing two points.  xy0 should map to xy1"""
-	def __init__(self, *args):
-		if len(args) == 2:
-			point0, point1 = args
-			x0 = point0.x
-			y0 = point0.y
-			x1 = point1.x
-			y1 = point1.y
-			weight = 1
-		elif len(args) == 4:
-			x0, y0, x1, y1 = args
-			weight = 1
-		self.x0 = float(x0)
-		self.y0 = float(y0)
-		self.x1 = float(x1)
-		self.y1 = float(y1)
-		self.weight = weight
-	def __str__(self):
-		return "({},{}) -> ({},{})".format(self.x0, self.y0, self.x1, self.y1)
-	def __repr__(self):
-		return self.__str__()
-	def a(self, num):
-		if num == 0:
-			return [self.x0, self.y0]
-		elif num == 1:
-			return [self.x1, self.y1]
-	def m(self, num):
-		return mat([self.a(num)])
-	def p(self, num):
-		return Point(*self.a(num))
-
-print Benchmark(1,1,10,10)
-
-
-class Benchmark(object):
+	"""An object containing two points.  point0 should map to point1"""
 	def __init__(self, point0, point1):
 		super(Benchmark, self).__init__()
 		self.point0 = point0.floatify()
@@ -83,18 +58,15 @@ class Benchmark(object):
 		return self.__str__()
 	def a(self, num):
 		if num == 0:
-			return [self.x0, self.y0]
+			return self.point0.coords
 		elif num == 1:
-			return [self.x1, self.y1]
+			return self.point1.coords
 	def m(self, num):
 		return mat([self.a(num)])
 	def p(self, num):
 		return Point(*self.a(num))
-		
 
 print Benchmark(Point(1,1),Point(10,10))
-
-exit()
 
 class Simplex(object):
 	"""docstring for Simplex"""
@@ -114,14 +86,13 @@ class Simplex(object):
 		result = self.matrix1 * generic
 		return self.origin1 + result
 
-# print Point(2,4).m()
+b0 = Benchmark(Point(1,1,2),Point(10,10,20))
+b1 = Benchmark(Point(2,5,3),Point(20,50,30))
+b2 = Benchmark(Point(4,3,2),Point(40,30,20))
+b3 = Benchmark(Point(1,5,4),Point(10,50,40))
 
-b0 = Benchmark(Point(1,1),Point(10,10))
-b1 = Benchmark(Point(2,5),Point(20,50))
-b2 = Benchmark(Point(4,3),Point(40,30))
+test = Simplex(b0, b1, b2, b3)
 
-test = Simplex(b0, b1, b2)
-
-d = Point(2,4)
+d = Point(2,4,7)
 
 print test.translate(d)
