@@ -1,27 +1,65 @@
+from datetime import datetime
+START = datetime.now()
+from csv import csv
 from transform import Point, PointMap, SimplexMap
+from translator import Translator
 
-b0 = PointMap(Point(1,1),Point(10,10))
-b1 = PointMap(Point(2,5),Point(20,50))
-b2 = PointMap(Point(4,3),Point(40,30))
-# b3 = PointMap(Point(1,5),Point(10,50))
+pointmaps = []
+for bm in csv('benchmarks.csv'):
+	game = Point(bm['Column'],bm['Row'])
+	real = Point(bm['Lon'],bm['Lat'])
+	pm = PointMap(game,real)
+	pointmaps.append(pm)
+	# print "{Place},{Lon},{Lat},{Kind}".format(**bm)
 
-test = SimplexMap(b0, b1, b2)
+# for pm in pointmaps:
+# 	print list(pm.a(0))
 
-# print test.mat0inv
-# print test.simplex0.matrix.inv()
-# print test.matrix1
-# print test.simplex1.matrix
+EmpireBuilder = Translator(*pointmaps)
+# print [ SimplexMap(*[ pointmaps[i] for i in s ]) for s in EmpireBuilder.delaunay.simplices ]
+	# print SimplexMap(*[ pointmaps[i] for i in s ])
 
-assert Point.weightedAverage(
-	(Point(2,4),3),
-	(Point(4,6),2),
-) == Point(2.8,4.8)
+# print EmpireBuilder.piecewise(Point(1,1))
 
-d = Point(2,4)
+# print EmpireBuilder.broadcast(Point(50,50)).google()
 
-# print test.translate(d)
-print test.translate(d)
+# exit()
 
+version = 10
+count = 0
+template = "R{row}C{col},{lon},{lat},{kind}"
 
+# template = "({col},-{row})"
+# for col in xrange(17*(version-1),17*version):
+# for col in xrange(1,68):
+for country in ["CAN","USA","MEX"]:
+	filepath = 'exports/v{}{}.csv'.format(version,country.lower())
+	print '>>', filepath
+	with open(filepath,'w') as file:
 
-		
+		def p(s):
+			file.write(s)
+			file.write('\n')
+			print s
+
+		p("Title,Lon,Lat,Kind")
+		for city in csv('cities.csv'):
+			if city['Country'] == country.upper():
+				# print city
+				loc = EmpireBuilder.broadcast(Point(int(city['Col']),int(city['Row'])))  
+				if loc:
+					count += 1
+
+					p(template.format(
+						row=city['Row'],
+						col=city['Col'],
+						lon=loc.x,
+						lat=loc.y,
+						kind=city['Terrain'] if city['CitySize'] == 'None' else city['CitySize']
+					))
+					# print EmpireBuilder.piecewise(Point(col,row)).google()
+					# exit()
+
+			# print count
+
+print datetime.now() - START

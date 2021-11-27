@@ -1,0 +1,16 @@
+import numpy as np 
+from random import random
+from scipy.spatial import Delaunay
+# print random()
+
+# k = [ [random(),random()] for m in xrange(10) ]
+# print k
+# for a, b in k:
+# 	print "{}\t{}".format(a,b)
+
+points = np.array([[0.7731325558190154, 0.09192999034808669], [0.607695412953437, 0.9254965012197663], [0.4083608065962031, 0.5487562727265702], [0.9403653185355458, 0.24613078315861192], [0.010686281375620554, 0.9918775123649409], [0.4393309489985425, 0.24606707028722608], [0.9388324062089414, 0.19479565627526274], [0.16209538838565984, 0.7359644877224396], [0.2516911743546957, 0.04628130693786492], [0.5180029152063543, 0.8664110633080866]])
+tri = Delaunay(points)
+# print dir(tri)
+print tri.simplices
+# print tri.vertices
+print tri.find_simplex([0.3,0.5])
